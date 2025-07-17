@@ -1,59 +1,118 @@
 # Chaos Simulation: Gravitational Attractors
 
 ## Overview
-This project simulates the chaotic behavior of particles in a gravitational field with multiple attractors. It visualizes the basins of attraction for particles starting from different positions in a 2D plane. The simulation was originally developed in Python for a university programming course in 2024, and later optimized in C for performance.
+
+This project simulates the chaotic behavior of particles in a gravitational field with multiple attractors. It visualizes the **basins of attraction** for particles starting from different positions in a 2D plane. The simulation was originally developed in **Python** and later extended in **C** for performance and flexibility.
+
+The simulations output color-coded images where:
+
+* Each **colored pixel** represents the attractor the particle eventually falls into
+* **White pixels** represent particles that escape the system
+
+---
+
+## 🗃️ Code Files Summary (Located in `/Codes/`)
+
+| File               | Language | Description                                                                                                                                                     |
+| ------------------ | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `chaos.py`         | Python   | The original version. Simulates attraction zones using NumPy and Matplotlib. Slower but easy to read and modify.                                                |
+| `chaos.c`          | C        | Optimized version of `chaos.py`. Reproduces the same results using low-level numerical integration and outputs `.ppm` images. Much faster.                      |
+| `dynamic_random.c` | C        | An extended version that generates a **random number of attractors** with **random positions and masses** on each run. Useful for exploring new configurations. |
+
+---
+
+## 📂 Images
+
+The output images for all three simulations are stored in the [/Images/](../Images/) folder. Examples include:
+
+* `chaos_map.png` from `chaos.c`
+* `random_rk4.png`, `random_symplectic.png`, `2random_rk4.png`, `2random_symplectic.png` from `dynamic_random.c`
+* Matplotlib-rendered PNGs from `chaos.py`
+
+---
 
 ## Project History
-- **2024 Python Version**: Created as a challenge for a university programming course. While functional, it took approximately **4 hours** to generate two graphs (2 hours each) on university PC hardware.
-- **2025 C Version**: Ported to C with AI assistance to learn C programming. The optimized version generates the same graphs in **under 3 minutes** - a 99% performance improvement.
 
-## Key Features
-- Two integration methods:
-  - Runge-Kutta 4th order (high accuracy)
-  - Symplectic Euler (energy-conserving)
-- Customizable parameters:
-  - Attractor positions, strengths and colors
-  - Grid resolution
-  - Time step and simulation duration
-- PPM image output (C version)
-- Matplotlib visualization (Python version)
+* **2024 - Python Version**: Developed as a university programming challenge. Functional but very slow on standard hardware (\~2 hours per image).
+* **2025 - C Version**: Rewritten in C with help from AI. Dramatic performance gains (\~3 minutes total for both images).
+* **2025 - Randomized Version**: Introduced randomized attractor generation to study statistical behavior and zone evolution over many simulations.
 
-## Performance Comparison
-| Version | Execution Time | Language | Lines of Code |
-|---------|----------------|----------|---------------|
-| Python  | ~4 hours       | Python   | ~240          |
-| C       | <3 minutes     | C        | ~175          |
+---
 
-## How to Use
-### C Version (Recommended)
+## 🔧 Features
+
+* Two integrators: Runge-Kutta 4 (RK4) and Symplectic Euler
+* Fast C-based `.ppm` image generation
+* Randomized attractor mode
+* Python version uses `matplotlib` for visualization
+* Simple vector algebra framework for 2D dynamics
+
+---
+
+## ⏱️ Performance Comparison
+
+| Version            | Runtime     | Language | Notes                      |
+| ------------------ | ----------- | -------- | -------------------------- |
+| `chaos.py`         | \~4 hours   | Python   | Slowest, uses Matplotlib   |
+| `chaos.c`          | \~3 minutes | C        | Deterministic layout       |
+| `dynamic_random.c` | \~3 minutes | C        | Random attractors each run |
+
+---
+
+## 🧪 How to Use
+
+### C Versions (Recommended)
+
 ```bash
-gcc -O3 -o chaos chaos.c -lm
-./chaos
+# For fixed attractors
+gcc chaos.c -o chaos -lm
+./chaos  # Output: rk4.ppm, symplectic.ppm
+
+# For random attractor simulations
+gcc dynamic_random.c -o dynamic_random -lm
+./dynamic_random  # Output: random_rk4.ppm, random_symplectic.ppm
 ```
-Output: `rk4.ppm` and `symplectic.ppm` images
 
 ### Python Version
+
 ```bash
 python chaos.py
 ```
-Requires: `numpy matplotlib tqdm`
 
-## Future Development Plans
-- [ ] Interactive real-time visualization
-- [ ] Additional integrators (Verlet, Adams-Bashforth)
-- [ ] 3D simulation support
-- [ ] Web interface (Emscripten port)
+> Requires: `numpy`, `matplotlib`, `tqdm`
 
-## Technical Notes
-The simulation models particles under gravitational potentials of the form V = -k/r. Each pixel in the output image represents:
-- **Colored pixel**: Final attractor captured by the particle
-- **White pixel**: Particle escaped the system
+---
 
-## Why the Performance Difference?
-The C version achieves 80-100x speedup due to:
-1. Native compilation vs Python interpretation
-2. Lower-level memory management
-3. Efficient inlining of vector operations
-4. Removal of Python object overhead
+## 🧭 Future Directions
 
-This project demonstrates how algorithmic optimization and language choice can dramatically impact computational physics simulations.
+* [ ] Add Verlet and other integrators
+* [ ] Real-time interactive viewer (OpenGL or web-based)
+* [ ] 3D gravitational simulations
+* [ ] Emscripten-based browser version
+
+---
+
+## ⚙️ Technical Notes
+
+The gravitational potential is modeled as:
+
+> **V(r) = -k / r**
+
+The force is calculated as:
+
+> **F = -∇V = -k r̂ / r²**
+
+Each pixel in the image represents a unique initial position, and the simulation traces the trajectory until it:
+
+* Reaches a nearby attractor (`distance < ε`)
+* Escapes the system (`distance > R_max`)
+
+---
+
+## 🚀 Why the C Version Is So Much Faster
+
+* No Python object overhead
+* Direct memory access (structs vs NumPy arrays)
+* Inlined vector math
+
+This project showcases how switching from high-level scripting to compiled languages can **massively improve performance**, especially in computational physics.
